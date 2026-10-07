@@ -45,6 +45,20 @@ function runStlThumb(bin, inputPath, pngPath) {
   });
 }
 
+function renderSvgThumbnail(filePath) {
+  const svg = fs.readFileSync(filePath);
+  if (!svg.length) throw new Error('SVG file is empty');
+  const prefix = svg.subarray(0, Math.min(svg.length, 1024)).toString('utf8').toLowerCase();
+  if (!prefix.includes('<svg')) throw new Error('File does not appear to contain SVG markup');
+  return `data:image/svg+xml;base64,${svg.toString('base64')}`;
+}
+
+function renderThumbnail(filePath, deps) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.svg') return Promise.resolve(renderSvgThumbnail(filePath));
+  return renderWithStlThumb(filePath, deps);
+}
+
 async function renderWithStlThumb(filePath, deps) {
   const options = deps || {};
   const prepared = stlThumbInput(filePath, options);
@@ -226,7 +240,7 @@ async function main() {
   const summary = await runThumbnailQueue({
     limit: args.limit,
     fetchBatch: (query) => callTool('get_models_missing_thumbnails', query),
-    render: (model) => renderWithStlThumb(model.filePath, { stlThumbBin: args.stlThumbBin }),
+    render: (model) => renderThumbnail(model.filePath, { stlThumbBin: args.stlThumbBin }),
     setThumbnail: (model, image) => callTool('set_thumbnail', {
       id: model.id,
       filePath: model.filePath,
@@ -248,6 +262,8 @@ if (require.main === module) {
 module.exports = {
   stlThumbInput,
   renderWithStlThumb,
+  renderSvgThumbnail,
+  renderThumbnail,
   runThumbnailQueue,
   toolPayload,
   parseArgs
