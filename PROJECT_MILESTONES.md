@@ -60,6 +60,23 @@ Validation:
 - Maker Library CI: passing.
 - Inherited TestDriver.ai workflow may fail on the fork because upstream secrets/configuration are not necessarily available; do not treat that alone as a Maker Library regression.
 
+### SVG validation checkpoint — 2026-10-06 (America/Denver)
+
+- Inspected Draft PR #1 and cloned `feature/laser-svg-support` at `4b4e8a0` into a Linux workspace. PR remains draft; no merge performed.
+- Syntax checks passed for `main.js`, `preview.js`, `thumbnail-worker.js`, and `thumbnail-worker.test.js`.
+- `npm run test:thumb-worker`: **13 passed, 0 failed** (missing-thumbnail query 3, primary-thumbnail query 3, 3MF flattening 3, thumbnail worker 4). SVG data URL generation and the existing 3MF flattening path pass. The STL rendering subprocess is mocked in these tests; this does not verify visual rendering.
+- Added a reusable mixed-format folder: `tests/test-fixtures/svg-milestone` with a red rectangle/blue circle SVG and equivalent tetrahedron STL/3MF files.
+- Attempted `npm start`: Electron exited with SIGTRAP because this Linux workspace runs as root without `--no-sandbox`. This is an environment launch limitation, not evidence of a Windows regression.
+- Computer Use native desktop APIs are disabled in this session. The user's Windows desktop was not accessed or modified.
+- **Pending:** Windows scan, visible thumbnails, SVG 2D preview, STL/3MF 3D previews, and restart persistence. No GUI results are claimed and Milestone 1 remains in progress.
+
+Immediate next steps before DXF implementation:
+1. On an accessible Windows desktop, clone/pull this feature branch, run `npm ci`, then `npm run test:thumb-worker` and `npm start`.
+2. Add `tests/test-fixtures/svg-milestone` as a scan folder; enable SVG in scan file types if necessary. Confirm all three files are indexed and have visible thumbnails.
+3. Open each preview: SVG should show the red rectangle/blue circle as a 2D image; STL and 3MF should show the same tetrahedron in the 3D viewer.
+4. Fully close and restart the app. Confirm the scan folder, indexed files, and thumbnails persist; reopen each preview and check for errors.
+5. Record observed Windows results here, fix any reproducible issues, rerun relevant checks, then decide whether Milestone 1 is ready for review.
+
 ## Next Milestone
 
 ### Milestone 2 — DXF Preview Support
@@ -155,3 +172,8 @@ Do not rely on old chat history when the repository provides newer information.
 - Established GitHub as the cross-thread source of truth.
 - Current active work remains SVG / laser asset foundation in Draft PR #1.
 - Next planned implementation: DXF preview support.
+
+### 2026-10-06 — SVG validation follow-up
+- Recorded 13 passing thumbnail tests and successful syntax checks.
+- Added mixed SVG/STL/3MF manual test fixtures.
+- Windows GUI testing remains blocked by unavailable native desktop control; next work is Windows validation before DXF.
