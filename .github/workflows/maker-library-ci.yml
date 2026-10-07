@@ -1,0 +1,32 @@
+name: Maker Library CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches:
+      - 'feature/**'
+
+jobs:
+  svg-laser-support:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check modified runtime files
+        run: |
+          node --check main.js
+          node --check preview.js
+          node --check thumbnail-worker.js
+          node --check thumbnail-worker.test.js
+
+      - name: SVG thumbnail regression test
+        run: node thumbnail-worker.test.js
