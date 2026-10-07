@@ -6,7 +6,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const fflate = require('fflate');
-const { renderWithStlThumb, runThumbnailQueue } = require('./thumbnail-worker');
+const { renderWithStlThumb, renderThumbnail, runThumbnailQueue } = require('./thumbnail-worker');
 
 function writeSample3mf(dest) {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -31,6 +31,20 @@ function writeSample3mf(dest) {
 }
 
 describe('thumbnail worker', () => {
+  test('SVG files produce a native image thumbnail without stl-thumb', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pv-svg-thumb-'));
+    const src = path.join(dir, 'laser-design.svg');
+    fs.writeFileSync(src, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>');
+    let stlThumbCalled = false;
+    const image = await renderThumbnail(src, {
+      runStlThumb: async () => { stlThumbCalled = true; }
+    });
+    assert.equal(stlThumbCalled, false);
+    assert.ok(image.startsWith('data:image/svg+xml;base64,'));
+    const decoded = Buffer.from(image.split(',')[1], 'base64').toString('utf8');
+    assert.match(decoded, /<svg/);
+  });
+
   test('3MF is flattened to STL before stl-thumb runs', async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pv-thumb-'));
     const src = path.join(dir, 'part.3mf');

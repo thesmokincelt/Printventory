@@ -8956,7 +8956,7 @@ function isPreviewableModelFile(filePath) {
   const ext = getPreviewableExtension(filePath);
   return ext === '.stl' || ext === '.3mf' || ext === '.obj' || ext === '.ply'
     || ext === '.step' || ext === '.stp' || ext === '.lys' || ext === '.igs' || ext === '.iges'
-    || ext === '.f3d' || ext === '.chitubox' || ext === '.voxl';
+    || ext === '.f3d' || ext === '.chitubox' || ext === '.voxl' || ext === '.svg';
 }
 
 function sendPreviewBundleEvent(event, payload) {
