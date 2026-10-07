@@ -897,11 +897,11 @@ console.log('[Preview] preview.js script loaded');
   function isPreviewableExtension(ext) {
     return ext === 'stl' || ext === '3mf' || ext === 'obj' || ext === 'ply'
       || ext === 'step' || ext === 'stp' || ext === 'lys' || ext === 'igs' || ext === 'iges'
-      || ext === 'f3d' || ext === 'chitubox' || ext === 'voxl';
+      || ext === 'f3d' || ext === 'chitubox' || ext === 'voxl' || ext === 'svg';
   }
 
   function isImageOnlyPreviewExtension(ext) {
-    return ext === 'f3d' || ext === 'chitubox' || ext === 'voxl';
+    return ext === 'f3d' || ext === 'chitubox' || ext === 'voxl' || ext === 'svg';
   }
 
   function hideImageOnlyPreview() {
@@ -937,6 +937,17 @@ console.log('[Preview] preview.js script loaded');
   }
 
   async function loadEmbeddedPreviewDataUrl(filePath, ext) {
+    if (ext === 'svg') {
+      const buffer = await loadLibraryFileBuffer(filePath);
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const chunkSize = 0x8000;
+      for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(offset, Math.min(offset + chunkSize, bytes.length)));
+      }
+      return `data:image/svg+xml;base64,${btoa(binary)}`;
+    }
+
     const getter =
       ext === 'f3d' ? window.electron?.getF3DImages
         : ext === 'chitubox' ? window.electron?.getChituboxImages
@@ -984,7 +995,7 @@ console.log('[Preview] preview.js script loaded');
     }
 
     if (isImageOnlyPreviewExtension(ext)) {
-      const label = ext === 'f3d' ? 'Fusion' : ext === 'chitubox' ? 'ChiTuBox' : 'VOXL';
+      const label = ext === 'f3d' ? 'Fusion' : ext === 'chitubox' ? 'ChiTuBox' : ext === 'svg' ? 'SVG' : 'VOXL';
       const loading = document.getElementById('preview-loading');
       if (loading && loading.querySelector('p')) {
         loading.querySelector('p').textContent = `Extracting ${label} preview...`;
